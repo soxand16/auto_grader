@@ -37,6 +37,7 @@ class StudentRunner:
     def run(self, test, mod):
         """ Run the given test case or test suite.  """
         result = StudentTestResult(self)
+        # The following updates will be written in the terminal
         self.writeUpdate("*"*70+"\n")
         self.writeUpdate("STUDENT: " + mod.__name__+"\n")
         test(result)
@@ -110,6 +111,10 @@ class StudentTestResult(unittest.TestResult):
         self.data['percent'] = 100*score/total
         
 class timeout:
+    """ 
+    Class designed to handle infinite while loops. Returns TimeoutError 
+    after the specified time
+    """
     def __init__(self, seconds=5, error_message='Timeout'):
         self.seconds = seconds
         self.error_message = error_message
@@ -122,8 +127,11 @@ class timeout:
         signal.alarm(0)
         
 class HWTestBase(unittest.TestCase):
+    """
+    Base class for tests to be imported to tester
+    """
 
-    # fixed prefix for test
+    # fixed prefix for test messages, necessary for student feedback files
     prefix = ">>>>>>"
     
     def __init__(self, testname, module):
@@ -132,6 +140,20 @@ class HWTestBase(unittest.TestCase):
         
                
 def runTests(names, test_class):
+    """
+    Runs tests in test class for all of the filenames in names
+    
+    Arguments :
+        names : list
+            list of str filenames to be tested
+        test_class : HWTestBase class
+            class based on HWTestBase containing tests to be run
+            
+    Returns :
+        data : dict
+            dictionairy with names as keys to dictionary containing
+            test results
+    """
     
     data = {}
     for name in names :
@@ -163,6 +185,18 @@ def runTests(names, test_class):
     return data
 
 def gradingStatistics(data) :
+    """
+    Counts numper of passes, failures, and errors for each test
+    
+    Arguments : 
+        data : dict
+            dictionary containing dictionaries for each files test results
+            
+    Returns: 
+        stats : dict
+            dictionary containing dictionary of passes, failures, and errors
+            for each test
+    """
     
     # initializes the stats dictionary for each test
     stats = {}
@@ -173,6 +207,7 @@ def gradingStatistics(data) :
         name = list(data.keys())[i]        
     for test in data[name]['tests'] :
         stats[test] = {'pass':0, 'failure': 0, 'error': 0, 'total':0}
+        
     # fills in data from tests    
     for name in data.keys() :
         if 'tests' in data[name].keys() :
@@ -184,6 +219,18 @@ def gradingStatistics(data) :
     return stats
 
 def plotStats(stats) :
+    """
+    Creates a stacked bar plot to visualize performance on each test
+    
+    Arguments :
+        stats : dict
+            dictionary containing dictionary of passes, failures, and errors
+            for each test
+            
+    Creates :
+        stats_plot.png : .png file
+            graphic representation of performance by test
+    """
     
     xticklabels = []
     passes = np.array([])
@@ -191,6 +238,7 @@ def plotStats(stats) :
     errors = np.array([])
     totals = np.array([])
     
+    # Appends each test name to xticklabels and makes arrays of the data
     for test in stats.keys() :
         xticklabels.append(test)
         passes = np.append(passes, stats[test]['pass'])
@@ -198,28 +246,33 @@ def plotStats(stats) :
         errors = np.append(errors, stats[test]['error'])
         totals = np.append(totals, stats[test]['total'])
     
+    # Normalizes the data by percentage
     passes = passes*100/totals
     fails = fails*100/totals
     errors = errors*100/totals
     
+    # Graph formatting
     ind = np.arange(0, len(xticklabels)*2, 2)
     width = 0.25
     
-    plt.figure(figsize=(10,6), edgecolor='w')
-    
+    # Plotting
+    plt.figure(figsize=(10,6), edgecolor='w')    
     p1 = plt.barh(ind, passes, width, color=(0.41, 1.0, 0.62))
     p2 = plt.barh(ind, fails, width, color=(1.0, 0.5, 0.62), left=passes)
     p3 = plt.barh(ind, errors, width, color=(0.2588,0.4433,1.0), left=passes+fails)
     
+    # Label and title
     plt.xlabel('Percent')
     plt.title('Grading Statistics', loc='left')
     
+    # axis ticks and legend and layout
     plt.yticks(ind, xticklabels, rotation='horizontal')
     plt.xticks(np.arange(0,101, 10), rotation='horizontal')
     plt.legend((p1[0], p2[0], p3[0]), ('Passes', 'Failures', 'Errors'), bbox_to_anchor=(1,1.06), loc='upper right',
                ncol=3, borderaxespad=0.)
     plt.tight_layout()
     
+    # saves figure
     plt.savefig('stats_plot.png')  
     
     
@@ -425,6 +478,7 @@ def load_names(pattern, exclude, directory):
     return names, naughty, modified, studentID
 
 if __name__ == "__main__":
+    # Set up parser
     parser = argparse.ArgumentParser()
     parser.add_argument("-tm", "--test_module", help="module containing test class",
                         default="hw5_testing_instructor")
@@ -446,13 +500,15 @@ if __name__ == "__main__":
     
     # add directory to path
     sys.path.append(args.directory)
-
+    
+    # import test class
     try:
         tm = importlib.import_module(args.test_module)
         tc = getattr(tm, args.test_class)
     except:
         print("Error importing " + args.test_class + " from " + args.test_module)
     else:
+        # if single file to test
         if args.single :
             names = [args.single]
             naughty = {}
