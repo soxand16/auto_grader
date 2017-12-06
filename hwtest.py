@@ -95,9 +95,9 @@ class StudentTestResult(unittest.TestResult):
             self.data['tests'][test._testMethodName]['raw'] = raw
             # extract the short message from failed test for delivery
             # to the student
-            msg_idx = raw.find(HWTestBase.prefix)
+            msg_idx = raw.rfind(':')
             if msg_idx > -1:
-                self.data['tests'][test._testMethodName]['message'] = raw[msg_idx+6:]
+                self.data['tests'][test._testMethodName]['message'] = raw[msg_idx+2:]
         # compute total points
         score = 0
         total = 0
@@ -130,9 +130,6 @@ class HWTestBase(unittest.TestCase):
     """
     Base class for tests to be imported to tester
     """
-
-    # fixed prefix for test messages, necessary for student feedback files
-    prefix = ">>>>>>"
     
     def __init__(self, testname, module):
         super().__init__(testname)
