@@ -11,6 +11,7 @@ import signal
 import numpy as np
 import matplotlib.pyplot as plt
 from sys import platform
+import multiprocessing as mp
 
 
 class StudentTestLoader(unittest.TestLoader):
@@ -136,49 +137,48 @@ class HWTestBase(unittest.TestCase):
         self.module = module
         
                
-def runTests(names, test_class):
+def runTests(name, test_class):
     """
-    Runs tests in test class for all of the filenames in names
+    Runs tests in test class for all of the filename 'name'
     
     Arguments :
-        names : list
-            list of str filenames to be tested
+        names : str
+            str of filename to be tested
         test_class : HWTestBase class
             class based on HWTestBase containing tests to be run
             
     Returns :
         data : dict
-            dictionairy with names as keys to dictionary containing
+            dictionairy with name as key to dictionary containing
             test results
     """
     
     data = {}
-    for name in names :
-        print("Testing ", name)
-        data[name] = {}
-        if platform in ['win32', 'win64'] :
-            print("I'm on Windoze and can't use signal!!!")
+    print("Testing ", name)
+    data[name] = {}
+    if platform in ['win32', 'win64'] :
+        print("I'm on Windoze and can't use signal!!!")
+    try:
+        with timeout(seconds=10) :
+            mod = importlib.import_module(name)
+    except TimeoutError :
+        data[name]['total'] = 0
+        data[name]['percent'] = 0
+        data[name]['comment'] = 'Likely an infinite while loop!'
+        print("Likely an infinite while loop!\n")
+    except:
+        data[name]['total'] = 0
+        data[name]['percent'] = 0
+        data[name]['comment'] = 'Importing led to an error.'
+        print("importing led to an error!\n")
+    else:
         try:
-            with timeout(seconds=10) :
-                mod = importlib.import_module(name)
-        except TimeoutError :
-            data[name]['total'] = 0
-            data[name]['percent'] = 0
-            data[name]['comment'] = 'Likely an infinite while loop!'
-            print("Likely an infinite while loop!\n")
+            loader = StudentTestLoader()
+            suite = loader.loadTestsFromTestCase(test_class, module=mod)
+            result = StudentRunner().run(suite, mod)
+            data[name] = result.data
         except:
-            data[name]['total'] = 0
-            data[name]['percent'] = 0
-            data[name]['comment'] = 'Importing led to an error.'
-            print("importing led to an error!\n")
-        else:
-            try:
-                loader = StudentTestLoader()
-                suite = loader.loadTestsFromTestCase(test_class, module=mod)
-                result = StudentRunner().run(suite, mod)
-                data[name] = result.data
-            except:
-                print("test suite failed!")
+            print("test suite failed!")
     return data
 
 def gradingStatistics(data) :
@@ -468,8 +468,9 @@ def load_names(pattern, exclude, directory):
                     naughty[newname[:-3]] = \
                         "Submitted file name contained one or more of the following: " + change
 
+            
+            modified[newname[:-3]] = original[:-3]
             if newname != original:
-                modified[newname[:-3]] = original[:-3]
                 shutil.copyfile(directory + '/' + original, directory + '/' + newname)
 
     return names, naughty, modified, studentID
@@ -478,7 +479,7 @@ if __name__ == "__main__":
     # Set up parser
     parser = argparse.ArgumentParser()
     parser.add_argument("-tm", "--test_module", help="module containing test class",
-                        default="hw5_testing_instructor")
+                        default="test_ex")
     parser.add_argument("-tc", "--test_class", help="name of test class",
                         default="TestHW")
     parser.add_argument("-s", "--single", help="name of single module to test",
@@ -512,8 +513,13 @@ if __name__ == "__main__":
             modified = {}
         else:
             # get the names through file filtering
-            names, naughty, modified, studentID = load_names(args.pattern, args.exclude, args.directory)            
-        data = runTests(names, tc)
+            names, naughty, modified, studentID = load_names(args.pattern, args.exclude, args.directory)
+        # Parallization of testing
+        pool = mp.Pool(processes=4)
+        data_list = [pool.apply(runTests, args=(name,tc)) for name in names] 
+        data = {}
+        for result in data_list :
+            data = {**data, **result}
         stats = gradingStatistics(data)
         processResults(data, naughty, modified, args.directory)
         if not args.single :
