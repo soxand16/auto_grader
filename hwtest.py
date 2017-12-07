@@ -350,26 +350,26 @@ def updateGrades(grades_file, assignment, studentID) :
     csvfilein = csv.reader(open('grades_backup.csv', 'r'))
     csvfileout = csv.writer(open(grades_file, 'w'))
     
-    #gets header and writes it to new csv
+    #gets header
     headers = csvfilein.__next__()
-    csvfileout.writerow(headers)
-    
     #gets the index of the assignment for grade updates
     canvas_assignment = [string for string in headers if re.match(assignment+' \(\d+\)', string)]
     index = headers.index(canvas_assignment[0])
+    
+    csvfileout.writerow(headers[:5]+headers[index:index+1])
     
     #next line is whether assignment is muted or not
     #preserved for all other assignments, assignment being graded muted for review on upload
     muted = csvfilein.__next__()
     muted[index] = 'Muted'
-    csvfileout.writerow(muted)
+    csvfileout.writerow(muted[:5]+muted[index:index+1])
     
     #next line is points for an assignment
     #gets value of total points and stores for future use
     #copies over to new csv
     points = csvfilein.__next__()
     assignment_points = points[index]
-    csvfileout.writerow(points)
+    csvfileout.writerow(points[:5]+points[index:index+1])
     
     for row in csvfilein :
         # name of student file for student with the ID contained in row
@@ -382,7 +382,7 @@ def updateGrades(grades_file, assignment, studentID) :
         else :
             print(row[0] + ' had no submission for this assigment.')
             
-        csvfileout.writerow(row)
+        csvfileout.writerow(row[:5]+row[index:index+1])
         
     
                     
@@ -493,6 +493,8 @@ if __name__ == "__main__":
                         default=None)
     parser.add_argument("-a", "--assignment", help="string of the asignment name in canvas",
                         default=None)
+    parser.add_argument("-o", "--open_stats", help="bool, True opens stats_plot at end of testing",
+                        default=False)
     args = parser.parse_args()    
     
     # add directory to path
@@ -528,5 +530,6 @@ if __name__ == "__main__":
             else :
                 print('pass the assignment name and csv of canvas grade book to produce an updated grades csv')
         plotStats(stats)
-        os.system('open stats_plot.png')
+        if args.open_stats :
+            os.system('open stats_plot.png')
             
