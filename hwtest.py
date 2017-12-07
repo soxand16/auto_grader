@@ -31,6 +31,7 @@ class StudentRunner:
 
     def __init__(self, stream=sys.stderr):
         self.stream = stream
+        self.msg = ''
 
     def writeUpdate(self, message):
         self.stream.write(message)
@@ -39,13 +40,14 @@ class StudentRunner:
         """ Run the given test case or test suite.  """
         result = StudentTestResult(self)
         # The following updates will be written in the terminal
-        self.writeUpdate("*"*70+"\n")
-        self.writeUpdate("STUDENT: " + mod.__name__+"\n")
+        self.msg = "*"*70+"\n"
+        self.msg +="STUDENT: " + mod.__name__+"\n"
         test(result)
         result.process()
-        self.writeUpdate("TOTAL: {}\n".format(result.data['total']))
-        self.writeUpdate("SCORE: {}\n".format(result.data['score']))
-        self.writeUpdate("~"*70+"\n\n")
+        self.msg +="TOTAL: {}\n".format(result.data['total'])
+        self.msg +="SCORE: {}\n".format(result.data['score'])
+        self.msg +="~"*70+"\n\n"
+        self.writeUpdate(self.msg)
         return result
 
 class StudentTestResult(unittest.TestResult):
@@ -66,7 +68,7 @@ class StudentTestResult(unittest.TestResult):
         else :
             points = int(points[0])
             
-        self.runner.writeUpdate('{0}, {1}, {2} '.format(test._testMethodName, points, test.shortDescription()))
+        self.runner.msg += '{0}, {1}, {2} '.format(test._testMethodName, points, test.shortDescription())
         self.data['tests'][test._testMethodName] = {}
         self.data['tests'][test._testMethodName]['points'] = points
         self.data['tests'][test._testMethodName]['description'] = test.shortDescription()
@@ -74,17 +76,17 @@ class StudentTestResult(unittest.TestResult):
     def addSuccess(self, test):
         unittest.TestResult.addSuccess(self, test)
         self.data['tests'][test._testMethodName]['status'] = 'pass'
-        self.runner.writeUpdate('PASS\n')
+        self.runner.msg += 'PASS\n'
 
     def addError(self, test, err):
         unittest.TestResult.addError(self, test, err)
         self.data['tests'][test._testMethodName]['status'] = 'error'
-        self.runner.writeUpdate('ERROR\n')
+        self.runner.msg += 'ERROR\n'
 
     def addFailure(self, test, err):
         unittest.TestResult.addFailure(self, test, err)
         self.data['tests'][test._testMethodName]['status'] = 'failure'
-        self.runner.writeUpdate('FAIL\n')
+        self.runner.msg += 'FAIL\n'
 
     def process(self):
         
@@ -488,7 +490,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--exclude", help="regex pattern to be excluded by tested modules",
                         default=r"test|solution|definition")
     parser.add_argument("-d", "--directory", help="directory with submissions to be tested",
-                        default="./")
+                        default="./submissions")
     parser.add_argument("-g", "--grades_file", help="csv of canvas gradebook",
                         default=None)
     parser.add_argument("-a", "--assignment", help="string of the asignment name in canvas",
