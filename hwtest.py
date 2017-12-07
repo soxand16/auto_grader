@@ -495,6 +495,8 @@ if __name__ == "__main__":
                         default=None)
     parser.add_argument("-o", "--open_stats", help="bool, True opens stats_plot at end of testing",
                         default=False)
+    parser.add_argument("-pr", "--processes", help="number of parallel processes",
+                        default=4, type=int)
     args = parser.parse_args()    
     
     # add directory to path
@@ -516,8 +518,9 @@ if __name__ == "__main__":
             # get the names through file filtering
             names, naughty, modified, studentID = load_names(args.pattern, args.exclude, args.directory)
         # Parallization of testing
-        pool = mp.Pool(processes=4)
-        data_list = [pool.apply(runTests, args=(name,tc)) for name in names] 
+        pool = mp.Pool(processes=args.processes)
+        results = [pool.apply_async(runTests, args=(name,tc)) for name in names] 
+        data_list = [p.get() for p in results]
         data = {}
         for result in data_list :
             data = {**data, **result}
