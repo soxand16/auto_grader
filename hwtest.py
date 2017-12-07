@@ -468,9 +468,8 @@ def load_names(pattern, exclude, directory):
                     naughty[newname[:-3]] = \
                         "Submitted file name contained one or more of the following: " + change
 
-            
-            modified[newname[:-3]] = original[:-3]
             if newname != original:
+                modified[newname[:-3]] = original[:-3]
                 shutil.copyfile(directory + '/' + original, directory + '/' + newname)
 
     return names, naughty, modified, studentID
