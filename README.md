@@ -4,11 +4,11 @@ This program is designed to cutdown on time spent grading student submissions by
 
 ## File Usage
 
-usage: hwtest.py [-h] [-tm TEST_MODULE] [-tc TEST_CLASS] [-s SINGLE]
-[-p PATTERN] [-e EXCLUDE] [-d DIRECTORY] [-g GRADES_FILE]
-[-a ASSIGNMENT] [-o OPEN_STATS] [-pr PROCESSES]
+    usage: hwtest.py [-h] [-tm TEST_MODULE] [-tc TEST_CLASS] [-s SINGLE]
+    [-p PATTERN] [-e EXCLUDE] [-d DIRECTORY] [-g GRADES_FILE]
+    [-a ASSIGNMENT] [-o OPEN_STATS] [-pr PROCESSES]
 
-optional arguments:
+    optional arguments:
 
     -h, --help            show this help message and exit
 
