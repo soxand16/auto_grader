@@ -57,19 +57,19 @@ def multiprocess(processes, n):
 # Timing
 # =============================================================================
 
-benchmarks = []
-
-benchmarks.append(timeit.Timer('serial(n)',
-            'from __main__ import serial, n').timeit(number=1))
-
-benchmarks.append(timeit.Timer('multiprocess(2, n)',
-            'from __main__ import multiprocess, n').timeit(number=1))
-
-benchmarks.append(timeit.Timer('multiprocess(3, n)',
-            'from __main__ import multiprocess, n').timeit(number=1))
-
-benchmarks.append(timeit.Timer('multiprocess(4, n)',
-            'from __main__ import multiprocess, n').timeit(number=1))
+#benchmarks = []
+#
+#benchmarks.append(timeit.Timer('serial(n)',
+#            'from __main__ import serial, n').timeit(number=1))
+#
+#benchmarks.append(timeit.Timer('multiprocess(2, n)',
+#            'from __main__ import multiprocess, n').timeit(number=1))
+#
+#benchmarks.append(timeit.Timer('multiprocess(3, n)',
+#            'from __main__ import multiprocess, n').timeit(number=1))
+#
+#benchmarks.append(timeit.Timer('multiprocess(4, n)',
+#            'from __main__ import multiprocess, n').timeit(number=1))
 
 
 def plot_results():
@@ -80,6 +80,7 @@ def plot_results():
     # plot bars
     y_pos = np.arange(len(benchmarks))
     plt.yticks(y_pos, bar_labels, fontsize=16)
+    plt.xticks(fontsize=16)
     bars = plt.barh(y_pos, benchmarks,
              align='center', alpha=0.4, color='g')
 
@@ -90,8 +91,8 @@ def plot_results():
                 '{0:.2%}'.format(benchmarks[0]/be),
                 ha='center', va='bottom', fontsize=12)
 
-    plt.xlabel('Time, seconds for n=%s' %n, fontsize=14)
-    plt.ylabel('Number of Processes', fontsize=14)
+    plt.xlabel('Time, seconds for n=%s' %n, fontsize=16)
+    plt.ylabel('Number of Processes', fontsize=16)
 #    t = plt.title('Serial vs. Multiprocessing via Array Summing Estimation', fontsize=18)
     plt.ylim([-1,len(benchmarks)])
     plt.xlim([0,max(benchmarks)*1.1])
@@ -99,7 +100,7 @@ def plot_results():
     plt.grid()
 
     plt.show()
-    plt.savefig('speed_comparison.png')
+
     
 plot_results()
 print_sysinfo()
