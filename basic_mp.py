@@ -10,7 +10,6 @@ def print_sysinfo():
 
     print('\nPython version  :', platform.python_version())
     print('compiler        :', platform.python_compiler())
-
     print('\nsystem     :', platform.system())
     print('release    :', platform.release())
     print('machine    :', platform.machine())
@@ -19,15 +18,8 @@ def print_sysinfo():
     print('interpreter:', platform.architecture()[0])
     print('\n\n')
 
-#def cube(x) :
-#    return {str(x) : x**3}
-#
-#pool = mp.Pool(processes=4)
-#results_list = [pool.apply(cube, args=(x,)) for x in range(1,7)] 
-#results = {}
-#for result in results_list :
-#    results = {**results, **result}
-#print(results)
+
+n = 1000000000
 
 
 def rsum(a, b) :
@@ -35,8 +27,6 @@ def rsum(a, b) :
     for i in range(a,b) :
         s += i
     return s
-
-n = 1000000000
 
 def serial(n):
     print('Running Serial')
@@ -57,23 +47,26 @@ def multiprocess(processes, n):
 # Timing
 # =============================================================================
 
-#benchmarks = []
-#
-#benchmarks.append(timeit.Timer('serial(n)',
-#            'from __main__ import serial, n').timeit(number=1))
-#
-#benchmarks.append(timeit.Timer('multiprocess(2, n)',
-#            'from __main__ import multiprocess, n').timeit(number=1))
-#
-#benchmarks.append(timeit.Timer('multiprocess(3, n)',
-#            'from __main__ import multiprocess, n').timeit(number=1))
-#
-#benchmarks.append(timeit.Timer('multiprocess(4, n)',
-#            'from __main__ import multiprocess, n').timeit(number=1))
+benchmarks = []
+
+benchmarks.append(timeit.Timer('serial(n)',
+            'from __main__ import serial, n').timeit(number=1))
+
+benchmarks.append(timeit.Timer('multiprocess(2, n)',
+            'from __main__ import multiprocess, n').timeit(number=1))
+
+benchmarks.append(timeit.Timer('multiprocess(3, n)',
+            'from __main__ import multiprocess, n').timeit(number=1))
+
+benchmarks.append(timeit.Timer('multiprocess(4, n)',
+            'from __main__ import multiprocess, n').timeit(number=1))
+
+benchmarks.append(timeit.Timer('multiprocess(6, n)',
+            'from __main__ import multiprocess, n').timeit(number=1))
 
 
 def plot_results():
-    bar_labels = ['serial', '2', '3', '4']
+    bar_labels = ['serial', '2', '3', '4', '6']
 
     fig = plt.figure(figsize=(10,6))
 
@@ -98,7 +91,7 @@ def plot_results():
     plt.xlim([0,max(benchmarks)*1.1])
     plt.vlines(benchmarks[0], -1, len(benchmarks)+0.5, linestyles='dashed')
     plt.grid()
-
+    plt.savefig('speed_comparison.png')
     plt.show()
 
     
